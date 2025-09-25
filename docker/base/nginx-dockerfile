@@ -1,8 +1,16 @@
 FROM nginx:1.15
 
-RUN sed -i s/deb.debian.org/archive.debian.org/g /etc/apt/sources.list
-RUN sed -i s/security.debian.org/archive.debian.org/g /etc/apt/sources.list
-RUN sed -i s/stretch-updates/stretch/g /etc/apt/sources.list
+# sources.list'i temiz yaz
+RUN printf "deb [trusted=yes] http://archive.debian.org/debian stretch main\n\
+deb [trusted=yes] http://archive.debian.org/debian-security stretch/updates main\n" > /etc/apt/sources.list
 
-RUN apt-get update && apt-get install -qy vim
+# EOL imza/geçerlilik kontrollerini gevşet
+RUN printf 'Acquire::Check-Valid-Until "false";\nAcquire::AllowInsecureRepositories "true";\n' \
+    > /etc/apt/apt.conf.d/99archive
+
+# Güncelle ve paket kur
+RUN apt-get -o Acquire::AllowInsecureRepositories=true update \
+ && apt-get install -y --no-install-recommends vim \
+ && rm -rf /var/lib/apt/lists/*
+
 RUN usermod -s /bin/bash www-data

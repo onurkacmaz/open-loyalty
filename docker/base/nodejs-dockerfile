@@ -1,6 +1,8 @@
-FROM node:14
+FROM node:14-bullseye
 
 RUN apt-get update \
-    && apt-get install -y ruby-full rubygems \
-    && gem instal sass
-RUN npm install --unsafe-perm -g gulp node-sass
+  && apt-get install -y --no-install-recommends ruby-full \
+  && rm -rf /var/lib/apt/lists/*
+
+# Gulp ve dart-sass
+RUN npm install -g --unsafe-perm gulp sass

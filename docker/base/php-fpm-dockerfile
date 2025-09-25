@@ -1,11 +1,27 @@
 FROM php:7.1-fpm
 
-COPY ["scripts/php-configure.sh", "/opt/bin/"]
-RUN sed -i 's/\r$//' /opt/bin/php-configure.sh
-RUN /bin/bash /opt/bin/php-configure.sh
+# EOL arşiv repo'ları ve imza kontrollerini gevşet
+RUN printf "deb [trusted=yes] http://archive.debian.org/debian buster main\n\
+deb [trusted=yes] http://archive.debian.org/debian-security buster/updates main\n" > /etc/apt/sources.list \
+ && printf 'Acquire::Check-Valid-Until "false";\nAcquire::AllowInsecureRepositories "true";\n' \
+    > /etc/apt/apt.conf.d/99archive
 
-RUN usermod --non-unique --uid 1000 www-data
-RUN rm -rf /var/www/html/*
-RUN usermod -s /bin/bash www-data
+# Derleme bağımlılıkları
+RUN apt-get -o Acquire::AllowInsecureRepositories=true update && apt-get install -y --no-install-recommends \
+    git curl ca-certificates pkg-config build-essential autoconf \
+    libpq-dev \
+    libjpeg62-turbo-dev libpng-dev libwebp-dev libfreetype6-dev zlib1g-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+# GD + PostgreSQL
+RUN docker-php-ext-configure gd --with-jpeg --with-freetype --with-webp \
+ && docker-php-ext-install -j$(nproc) gd pdo_pgsql pgsql
+
+# Kullanıcı
+RUN usermod --non-unique --uid 1000 www-data \
+ && rm -rf /var/www/html/* \
+ && usermod -s /bin/bash www-data
 
 COPY php.ini /usr/local/etc/php/php.ini
+COPY scripts/php-configure.sh /opt/bin/
+RUN sed -i 's/\r$//' /opt/bin/php-configure.sh && bash /opt/bin/php-configure.sh
