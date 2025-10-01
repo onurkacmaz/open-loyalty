@@ -18,12 +18,12 @@
     },
     "require": {
         "php": ">=7.1",
-        "onurkacmaz/open-loyalty-framework": "dev-master as 3.3"
+        "dataworksbi/open-loyalty-framework": "dev-dev as 3.3"
     },
     "repositories": [
         {
             "type": "git",
-            "url": "https://github.com/onurkacmaz/open-loyalty-framework"
+            "url": "https://github.com/dataworksbi/open-loyalty-framework"
             }
     ],
     "scripts": {
